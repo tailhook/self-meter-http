@@ -1,0 +1,27 @@
+[package]
+name = "self-meter-http"
+description = """
+    A http renderer for self-meter crate, easily pluggable into tokio-based,
+    or tk-http-based. May be plugged in any other application using
+    separate thread.
+"""
+license = "MIT/Apache-2.0"
+readme = "README.rst"
+keywords = ["metrics", "monitoring"]
+categories = ["Asynchronous", "Network programming"]
+homepage = "http://github.com/tailhook/self-meter-http"
+documentation = "http://docs.rs/self-meter-http"
+version = "0.1.0"
+authors = ["paul@colomiets.name"]
+
+[dependencies]
+tokio-core = "0.1.2"
+tk-http = "0.1.2"
+futures = "0.1.10"
+log = "0.3.7"
+serde = "0.9.11"
+serde_json = "0.9.9"
+
+[dev-dependencies]
+env_logger = "0.4.2"
+tk-easyloop = "0.1.1"
