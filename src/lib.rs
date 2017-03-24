@@ -1,3 +1,4 @@
+//! HTTP/tokio handler for self-meter crate
 #![warn(missing_docs)]
 #![warn(missing_debug_implementations)]
 extern crate futures;

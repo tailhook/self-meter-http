@@ -11,6 +11,7 @@ use tk_http::{Status};
 use tk_http::server::{Encoder, EncoderDone};
 
 use json::serialize;
+use self_meter::Pid;
 
 /// A wrapper around original ``self_meter::Meter`` that locks internal
 /// mutex on most operations and maybe used in multiple threads safely.
@@ -20,7 +21,7 @@ pub struct Meter(Arc<Mutex<self_meter::Meter>>);
 
 impl Meter {
 
-    /// Create a new meter with specified scan interval
+    /// Create a new meter with specified scan iterval of one second
     pub fn new() -> Meter {
         let inner = self_meter::Meter::new(Duration::new(1, 0))
             .expect("self-meter should be created successfully");
@@ -67,6 +68,21 @@ impl Meter {
             self.serialize(BufWriter::new(&mut e))
         }
         e.done()
+    }
+    /// Start tracking specified thread
+    ///
+    /// Note: you must add main thread here manually. Usually you
+    /// should use `track_current_thread()` instead.
+    pub fn track_thread(&mut self, tid: Pid, name: &str) {
+        self.lock().track_thread(tid, name)
+    }
+    /// Stop tracking specified thread (for example if it's dead)
+    pub fn untrack_thread(&mut self, tid: Pid) {
+        self.lock().untrack_thread(tid)
+    }
+    /// Add current thread using `track_thread`, returns thread id
+    pub fn track_current_thread(&mut self, name: &str) -> Pid {
+        self.lock().track_current_thread(name)
     }
 }
 
