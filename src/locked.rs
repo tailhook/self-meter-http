@@ -61,7 +61,7 @@ impl Meter {
         e.add_header("Server",
             concat!("self-meter-http/", env!("CARGO_PKG_VERSION"))
         ).unwrap();
-        e.add_header("Content-Type", "application/json");
+        e.add_header("Content-Type", "application/json").unwrap();
         e.add_chunked().unwrap();
         if e.done_headers().unwrap() {
             self.serialize(BufWriter::new(&mut e))
