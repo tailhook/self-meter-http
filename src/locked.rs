@@ -2,6 +2,7 @@ use std::fmt;
 use std::io::{Write, BufWriter};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
+use std::thread;
 
 use futures::stream::Stream;
 use self_meter;
@@ -73,16 +74,33 @@ impl Meter {
     ///
     /// Note: you must add main thread here manually. Usually you
     /// should use `track_current_thread()` instead.
-    pub fn track_thread(&mut self, tid: Pid, name: &str) {
+    pub fn track_thread(&self, tid: Pid, name: &str) {
         self.lock().track_thread(tid, name)
     }
     /// Stop tracking specified thread (for example if it's dead)
-    pub fn untrack_thread(&mut self, tid: Pid) {
+    pub fn untrack_thread(&self, tid: Pid) {
         self.lock().untrack_thread(tid)
     }
     /// Add current thread using `track_thread`, returns thread id
-    pub fn track_current_thread(&mut self, name: &str) -> Pid {
+    pub fn track_current_thread(&self, name: &str) -> Pid {
         self.lock().track_current_thread(name)
+    }
+    /// Track current thread by using name from `std::thread::current().name()`
+    ///
+    /// This may not work if thread has no name, use `track_current_thread`
+    /// if thread has no own name or if you're unsure.
+    ///
+    /// # Panics
+    ///
+    /// If no thread is set.
+    pub fn track_current_thread_by_name(&self) {
+        let thread = thread::current();
+        let name = thread.name().expect("thread name must be set");
+        self.lock().track_current_thread(name);
+    }
+    /// Remove current thread using `untrack_thread`
+    pub fn untrack_current_thread(&self) {
+        self.lock().untrack_current_thread();
     }
 }
 

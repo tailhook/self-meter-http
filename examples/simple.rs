@@ -28,6 +28,7 @@ fn main() {
     env_logger::init().expect("init logging");
 
     let meter = self_meter_http::Meter::new();
+    meter.track_current_thread_by_name();
 
     tk_easyloop::run_forever(|| -> Result<(), ()> {
         meter.spawn_scanner(&handle());
