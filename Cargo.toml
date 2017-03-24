@@ -11,7 +11,7 @@ keywords = ["metrics", "monitoring"]
 categories = ["asynchronous", "network-programming"]
 homepage = "http://github.com/tailhook/self-meter-http"
 documentation = "http://docs.rs/self-meter-http"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["paul@colomiets.name"]
 
 [dependencies]
