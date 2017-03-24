@@ -2,7 +2,7 @@
 Self-meter HTTP Renderer
 ========================
 
-:Status: Beta
+:Status: Alpha
 :Documentation: http://docs.rs/self-meter-http/
 
 
