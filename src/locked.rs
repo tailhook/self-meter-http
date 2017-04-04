@@ -6,7 +6,6 @@ use std::thread;
 
 use futures::stream::Stream;
 use self_meter;
-use tokio_core::io::Io;
 use tokio_core::reactor::{Handle, Interval};
 use tk_http::{Status};
 use tk_http::server::{Encoder, EncoderDone};
@@ -57,7 +56,7 @@ impl Meter {
     }
 
     /// Same as `serialize` but also adds required HTTP headers
-    pub fn respond<S: Io>(&self, mut e: Encoder<S>) -> EncoderDone<S> {
+    pub fn respond<S>(&self, mut e: Encoder<S>) -> EncoderDone<S> {
         e.status(Status::Ok);
         // TODO(tailhook) add date
         e.add_header("Server",
