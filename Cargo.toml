@@ -11,7 +11,7 @@ keywords = ["metrics", "monitoring"]
 categories = ["asynchronous", "network-programming"]
 homepage = "http://github.com/tailhook/self-meter-http"
 documentation = "http://docs.rs/self-meter-http"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["paul@colomiets.name"]
 
 [dependencies]
@@ -21,7 +21,7 @@ futures = "0.1.10"
 log = "0.3.7"
 serde = "0.9.11"
 serde_json = "0.9.9"
-self-meter = "0.4.2"
+self-meter = "0.5.0"
 
 [dev-dependencies]
 env_logger = "0.4.2"
