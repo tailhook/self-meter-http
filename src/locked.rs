@@ -6,11 +6,12 @@ use std::thread;
 
 use futures::stream::Stream;
 use self_meter;
+use serde::{Serializer, Serialize};
 use tokio_core::reactor::{Handle, Interval};
 use tk_http::{Status};
 use tk_http::server::{Encoder, EncoderDone};
 
-use json::serialize;
+use json::{serialize, ReportWrapper, ThreadIter};
 use self_meter::Pid;
 
 /// A wrapper around original ``self_meter::Meter`` that locks internal
@@ -18,6 +19,31 @@ use self_meter::Pid;
 #[derive(Clone)]
 pub struct Meter(Arc<Mutex<self_meter::Meter>>);
 
+/// A serializable report structure
+///
+/// Use `Meter::report()` to get instance.
+///
+/// Currently the structure is fully opaque except serialization
+#[derive(Debug)]
+pub struct Report<'a>(&'a Meter);
+
+/// A serializable thread report structure
+///
+/// The structure serializes to a map of thread reports.
+/// Use `Meter::thread_report()` to get instance.
+///
+/// Currently the structure is fully opaque except serialization
+#[derive(Debug)]
+pub struct ThreadReport<'a>(&'a Meter);
+
+/// A serializable process report structure
+///
+/// The structure serializes to a structure of whole-process metrics.
+/// Use `Meter::process_report()` to get instance.
+///
+/// Currently the structure is fully opaque except serialization
+#[derive(Debug)]
+pub struct ProcessReport<'a>(&'a Meter);
 
 impl Meter {
 
@@ -53,6 +79,27 @@ impl Meter {
     /// Serialize response into JSON
     pub fn serialize<W: Write>(&self, buf: W) {
         serialize(&*self.lock(), buf)
+    }
+
+    /// Get serializable report
+    pub fn report(&self) -> Report {
+        Report(self)
+    }
+
+    /// Get serializable report for process data
+    ///
+    /// This is a part of `report()` / `Report`, and is needed for fine-grained
+    /// serialization control.
+    pub fn process_report(&self) -> ProcessReport {
+        ProcessReport(self)
+    }
+
+    /// Get serializable report for thread data
+    ///
+    /// This is a part of `report()` / `Report`, and is needed for fine-grained
+    /// serialization control.
+    pub fn thread_report(&self) -> ThreadReport {
+        ThreadReport(self)
     }
 
     /// Same as `serialize` but also adds required HTTP headers
@@ -107,5 +154,29 @@ impl fmt::Debug for Meter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Meter")
         .finish()
+    }
+}
+
+impl<'a> Serialize for Report<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        ReportWrapper { meter: &*self.0.lock() }.serialize(serializer)
+    }
+}
+
+impl<'a> Serialize for ProcessReport<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        self.0.lock().report().serialize(serializer)
+    }
+}
+
+impl<'a> Serialize for ThreadReport<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        ThreadIter(&*self.0.lock()).serialize(serializer)
     }
 }

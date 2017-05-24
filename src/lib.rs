@@ -14,3 +14,4 @@ mod locked;
 mod json;
 
 pub use locked::Meter;
+pub use locked::{Report, ProcessReport, ThreadReport};

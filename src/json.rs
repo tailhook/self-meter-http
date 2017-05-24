@@ -6,22 +6,22 @@ use serde::ser::{SerializeStruct, SerializeMap};
 use self_meter::Meter;
 
 
-struct Report<'a> {
-    meter: &'a Meter,
+pub struct ReportWrapper<'a> {
+    pub meter: &'a Meter,
 }
 
-struct ThreadIter<'a>(&'a Meter);
+pub struct ThreadIter<'a>(pub &'a Meter);
 
 
 pub fn serialize<W: Write>(meter: &Meter, mut buf: W) {
     serde_json::to_writer(&mut buf,
-        &Report {
+        &ReportWrapper {
             meter: meter,
         },
     ).expect("self report is serializable");
 }
 
-impl<'a> Serialize for Report<'a> {
+impl<'a> Serialize for ReportWrapper<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
