@@ -1,0 +1,2 @@
+view main(router):
+  <h1> "Status"

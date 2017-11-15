@@ -6,3 +6,6 @@ versions:
   block-start: ^\[package\]
   block-end: ^\[.*\]
   regex: ^version\s*=\s*"(\S+)"
+
+- file: frontend/webpack.config.js
+  regex: VERSION:\s*JSON\.stringify\("v([^"]+)"\)

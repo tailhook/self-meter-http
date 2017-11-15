@@ -1,8 +1,15 @@
 commands:
 
+  make-js: !Command
+    description: Build js/frontend dependencies
+    container: js
+    work-dir: ./frontend
+    run: [webpack, --bail]
+
   make: !Command
     description: Build the library
     container: ubuntu
+    prerequisites: [make-js]
     run: [cargo, build]
 
   cargo: !Command
@@ -41,3 +48,12 @@ containers:
     environ:
       HOME: /work/target
       RUST_BACKTRACE: 1
+
+  js:
+    setup:
+    - !Alpine v3.6
+    - !YarnDependencies
+      dir: frontend
+    environ:
+      NODE_PATH: /usr/lib/node_modules
+      BABEL_DISABLE_CACHE: 1

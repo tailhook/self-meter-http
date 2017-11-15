@@ -14,8 +14,9 @@ use std::time::Duration;
 use tokio_core::net::{TcpListener};
 use futures::{Future, Stream};
 use futures::future::{ok};
+use self_meter_http::routing;
 
-use tk_http::server::buffered::{BufferedDispatcher};
+use tk_http::server::buffered::{BufferedDispatcher, Request};
 use tk_http::server::{self, Proto};
 use tk_listen::ListenExt;
 use tk_easyloop::handle;
@@ -44,7 +45,13 @@ fn main() {
                 Proto::new(socket, &scfg,
                     BufferedDispatcher::new(addr, &handle(), move || {
                         let meter = meter.clone();
-                        move |_req, e| ok(meter.respond(e))
+                        move |req: Request, e| {
+                            let route = routing::parse(
+                                req.method(), req.path(),
+                                req.headers().iter()
+                                    .map(|&(ref k, ref v)| (&k[..], &v[..])));
+                            ok(meter.serve(route, e))
+                        }
                     }),
                     &handle())
                 .map_err(|e| { debug!("Connection error: {}", e); })

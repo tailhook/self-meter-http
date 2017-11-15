@@ -13,6 +13,8 @@ use tk_http::server::{Encoder, EncoderDone};
 
 use json::{serialize, ReportWrapper, ThreadIter};
 use self_meter::Pid;
+use routing::{Route, Error as RError};
+use data;
 
 /// A wrapper around original ``self_meter::Meter`` that locks internal
 /// mutex on most operations and maybe used in multiple threads safely.
@@ -116,6 +118,87 @@ impl Meter {
         }
         e.done()
     }
+
+    /// Similar to respond, but also serves static files if needed
+    pub fn serve<S>(&self, route: Result<Route, RError>, mut e: Encoder<S>)
+        -> EncoderDone<S>
+    {
+        match route {
+            Ok(Route::Page) => {
+                e.status(Status::Ok);
+                // TODO(tailhook) add date
+                e.add_header("Server",
+                    concat!("self-meter-http/", env!("CARGO_PKG_VERSION"))
+                ).unwrap();
+                e.add_header("Content-Type", "text/html").unwrap();
+                e.add_length(data::HTML.as_bytes().len() as u64).unwrap();
+                if e.done_headers().unwrap() {
+                    e.write_body(data::HTML.as_bytes());
+                }
+                e.done()
+            }
+            Ok(Route::Bundle) => {
+                e.status(Status::Ok);
+                // TODO(tailhook) add date
+                e.add_header("Server",
+                    concat!("self-meter-http/", env!("CARGO_PKG_VERSION"))
+                ).unwrap();
+                e.add_header("Content-Type",
+                    "application/javascript").unwrap();
+                e.add_length(data::BUNDLE.as_bytes().len() as u64).unwrap();
+                if e.done_headers().unwrap() {
+                    e.write_body(data::BUNDLE.as_bytes());
+                }
+                e.done()
+            }
+            Ok(Route::Stylesheet) => {
+                e.status(Status::Ok);
+                // TODO(tailhook) add date
+                e.add_header("Server",
+                    concat!("self-meter-http/", env!("CARGO_PKG_VERSION"))
+                ).unwrap();
+                e.add_header("Content-Type",
+                    "text/stylesheet").unwrap();
+                e.add_length(data::CSS.as_bytes().len() as u64).unwrap();
+                if e.done_headers().unwrap() {
+                    e.write_body(data::CSS.as_bytes());
+                }
+                e.done()
+            }
+            Ok(Route::StatusJson) => {
+                e.status(Status::Ok);
+                // TODO(tailhook) add date
+                e.add_header("Server",
+                    concat!("self-meter-http/", env!("CARGO_PKG_VERSION"))
+                ).unwrap();
+                e.add_header("Content-Type", "application/json").unwrap();
+                e.add_chunked().unwrap();
+                if e.done_headers().unwrap() {
+                    self.serialize(BufWriter::new(&mut e))
+                }
+                e.done()
+            }
+            Ok(__Nonexhaustive) => unreachable!(),
+            Err(err) => {
+                e.status(match err {
+                    RError::NotFound => Status::NotFound,
+                    RError::MethodNotAllowed => Status::MethodNotAllowed,
+                    _ => Status::InternalServerError,
+                });
+                // TODO(tailhook) add date
+                e.add_header("Server",
+                    concat!("self-meter-http/", env!("CARGO_PKG_VERSION"))
+                ).unwrap();
+                e.add_header("Content-Type", "application/json").unwrap();
+                e.add_chunked().unwrap();
+                if e.done_headers().unwrap() {
+                    self.serialize(BufWriter::new(&mut e))
+                }
+                e.done()
+            }
+        }
+    }
+
     /// Start tracking specified thread
     ///
     /// Note: you must add main thread here manually. Usually you

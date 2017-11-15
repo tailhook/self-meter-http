@@ -1,0 +1,23 @@
+{
+  "name": "self-meter-http-frontend",
+  "private": true,
+  "description": "The frontend embedded in the self-meter-http (rust)",
+  "dependencies": {
+    "khufu-runtime": "0.5.1",
+    "khufu-routing": "0.1.2",
+    "material-components-web": "0.25.0",
+    "redux": "3.7.2"
+  },
+  "devDependencies": {
+    "webpack": "3.8.1",
+    "babel-loader": "7.1.2",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-plugin-transform-strict-mode": "6.24.1",
+    "babel-minify-webpack-plugin": "0.2.0",
+    "babel-core": "6.26.0",
+    "babel-preset-minify": "0.2.0",
+    "khufu": "0.5.1"
+  },
+  "author": "Paul Colomiets <paul@colomiets.name>",
+  "license": "MIT"
+}
